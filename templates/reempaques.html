@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Reempaques{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0" style="color:#7B1FA2;"><i class="bi bi-arrow-repeat me-2"></i>Registro de Reempaques</h2>
+</div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header text-white fw-semibold" style="background:#7B1FA2;">
+        <i class="bi bi-plus-circle me-2"></i>Nuevo Reempaque
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('reempaques') }}" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Material *</label>
+            {{ form.material_id(class="form-select", id="materialSelect") }}
+            {% for e in form.material_id.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="alert alert-info py-2 small" id="stockInfo" style="display:none!important;">
+            <i class="bi bi-info-circle me-1"></i>Stock disponible: <strong id="stockVal">—</strong>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cantidad a reempacar *</label>
+            <div class="input-group">
+              {{ form.cantidad_entrada(class="form-control", placeholder="0.00", step="0.001") }}
+              <span class="input-group-text" id="unidadIn">—</span>
+            </div>
+            {% for e in form.cantidad_entrada.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cantidad resultante *</label>
+            <div class="input-group">
+              {{ form.cantidad_salida(class="form-control", placeholder="0.00", step="0.001") }}
+              <span class="input-group-text" id="unidadOut">—</span>
+            </div>
+            {% for e in form.cantidad_salida.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tiempo de trabajo (minutos) *</label>
+            {{ form.tiempo_minutos(class="form-control", placeholder="30") }}
+            {% for e in form.tiempo_minutos.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Fecha *</label>
+            {{ form.fecha(class="form-control", value=today) }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notas</label>
+            {{ form.notas(class="form-control", rows=2) }}
+          </div>
+          <button type="submit" class="btn w-100 text-white fw-bold" style="background:#7B1FA2;">
+            <i class="bi bi-check-circle me-2"></i>Registrar Reempaque
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold border-bottom d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2" style="color:#7B1FA2;"></i>Últimos 100 Reempaques</span>
+        <span class="badge" style="background:#7B1FA2;">{{ registros|length }}</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Fecha</th>
+                <th>Material</th>
+                <th class="text-end">Entrada</th>
+                <th class="text-end">Salida</th>
+                <th class="text-end">Tiempo</th>
+                <th>Usuario</th>
+                {% if current_user.role == 'admin' %}<th></th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in registros %}
+              <tr>
+                <td class="text-nowrap">{{ r.fecha.strftime('%d/%m/%Y') }}</td>
+                <td class="fw-semibold">{{ r.material.nombre }}</td>
+                <td class="text-end text-danger">{{ r.cantidad_entrada }} {{ r.material.unidad }}</td>
+                <td class="text-end fw-bold" style="color:#7B1FA2;">{{ r.cantidad_salida }} {{ r.material.unidad }}</td>
+                <td class="text-end text-muted">{{ r.tiempo_minutos }} min</td>
+                <td><span class="badge bg-secondary">{{ r.usuario.username if r.usuario else '—' }}</span></td>
+                {% if current_user.role == 'admin' %}
+                <td>
+                  <form method="POST" action="{{ url_for('delete_reempaque', id=r.id) }}" onsubmit="return confirm('¿Eliminar?')">
+                    {{ form.hidden_tag() }}
+                    <button class="btn btn-sm btn-outline-danger py-0"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+                {% endif %}
+              </tr>
+              {% else %}
+              <tr><td colspan="7" class="text-center text-muted py-4">No hay reempaques registrados.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const sel = document.getElementById('materialSelect');
+const stockInfo = document.getElementById('stockInfo');
+const stockVal = document.getElementById('stockVal');
+const unidadIn = document.getElementById('unidadIn');
+const unidadOut = document.getElementById('unidadOut');
+
+function fetchStock(id) {
+  if (!id) return;
+  fetch(`/api/stock/${id}`, {credentials:'same-origin'})
+    .then(r => r.json())
+    .then(d => {
+      unidadIn.textContent = d.unidad;
+      unidadOut.textContent = d.unidad;
+      stockVal.textContent = `${d.stock} ${d.unidad}`;
+      stockInfo.style.removeProperty('display');
+    });
+}
+sel.addEventListener('change', () => fetchStock(sel.value));
+fetchStock(sel.value);
+</script>
+{% endblock %}

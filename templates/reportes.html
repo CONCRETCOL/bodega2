@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Reportes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-bar-chart-line me-2 text-info"></i>Reportes por Período</h2>
+  <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+    <i class="bi bi-printer me-1"></i>Imprimir
+  </button>
+</div>
+
+<!-- Filtro de fechas -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('reportes') }}" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Desde</label>
+        <input type="date" name="desde" class="form-control" value="{{ fecha_desde }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Hasta</label>
+        <input type="date" name="hasta" class="form-control" value="{{ fecha_hasta }}">
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-info text-white w-100 fw-bold">
+          <i class="bi bi-search me-2"></i>Generar Reporte
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Resumen -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm text-center py-3">
+      <div class="display-6 fw-bold text-primary">{{ "%.1f"|format(total_entradas) }}</div>
+      <div class="small text-muted fw-semibold">Total Entradas</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm text-center py-3">
+      <div class="display-6 fw-bold" style="color:#7B1FA2;">{{ "%.1f"|format(total_reempaque) }}</div>
+      <div class="small text-muted fw-semibold">Total Reempacado</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm text-center py-3">
+      <div class="display-6 fw-bold text-success">{{ "%.1f"|format(total_salidas) }}</div>
+      <div class="small text-muted fw-semibold">Total Salidas</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm text-center py-3">
+      <div class="display-6 fw-bold text-warning">{{ "%.0f"|format(total_tiempo) }} min</div>
+      <div class="small text-muted fw-semibold">Tiempo Reempaque</div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs de movimientos -->
+<ul class="nav nav-tabs mb-0" id="reporteTabs">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabEntradas">
+    <i class="bi bi-box-arrow-in-down me-1 text-primary"></i>Entradas ({{ entradas|length }})
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabReempaques">
+    <i class="bi bi-arrow-repeat me-1" style="color:#7B1FA2;"></i>Reempaques ({{ reempaques|length }})
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSalidas">
+    <i class="bi bi-box-arrow-up me-1 text-success"></i>Salidas ({{ salidas|length }})
+  </button></li>
+</ul>
+
+<div class="tab-content">
+  <!-- Entradas -->
+  <div class="tab-pane fade show active" id="tabEntradas">
+    <div class="card border-0 shadow-sm rounded-top-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+          <thead class="table-light"><tr><th>Fecha</th><th>Material</th><th class="text-end">Cantidad</th><th>Proveedor</th><th>Usuario</th></tr></thead>
+          <tbody>
+            {% for e in entradas %}
+            <tr>
+              <td>{{ e.fecha.strftime('%d/%m/%Y') }}</td>
+              <td class="fw-semibold">{{ e.material.nombre }}</td>
+              <td class="text-end text-primary fw-bold">{{ e.cantidad }} {{ e.material.unidad }}</td>
+              <td>{{ e.proveedor or '—' }}</td>
+              <td><span class="badge bg-secondary">{{ e.usuario.username if e.usuario else '—' }}</span></td>
+            </tr>
+            {% else %}<tr><td colspan="5" class="text-center text-muted py-3">Sin registros en el período.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reempaques -->
+  <div class="tab-pane fade" id="tabReempaques">
+    <div class="card border-0 shadow-sm rounded-top-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+          <thead class="table-light"><tr><th>Fecha</th><th>Material</th><th class="text-end">Entrada</th><th class="text-end">Salida</th><th class="text-end">Tiempo</th><th>Usuario</th></tr></thead>
+          <tbody>
+            {% for r in reempaques %}
+            <tr>
+              <td>{{ r.fecha.strftime('%d/%m/%Y') }}</td>
+              <td class="fw-semibold">{{ r.material.nombre }}</td>
+              <td class="text-end text-danger">{{ r.cantidad_entrada }} {{ r.material.unidad }}</td>
+              <td class="text-end fw-bold" style="color:#7B1FA2;">{{ r.cantidad_salida }} {{ r.material.unidad }}</td>
+              <td class="text-end text-muted">{{ r.tiempo_minutos }} min</td>
+              <td><span class="badge bg-secondary">{{ r.usuario.username if r.usuario else '—' }}</span></td>
+            </tr>
+            {% else %}<tr><td colspan="6" class="text-center text-muted py-3">Sin registros en el período.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salidas -->
+  <div class="tab-pane fade" id="tabSalidas">
+    <div class="card border-0 shadow-sm rounded-top-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+          <thead class="table-light"><tr><th>Fecha</th><th>Material</th><th class="text-end">Cantidad</th><th>Destino</th><th>Usuario</th></tr></thead>
+          <tbody>
+            {% for s in salidas %}
+            <tr>
+              <td>{{ s.fecha.strftime('%d/%m/%Y') }}</td>
+              <td class="fw-semibold">{{ s.material.nombre }}</td>
+              <td class="text-end text-success fw-bold">{{ s.cantidad }} {{ s.material.unidad }}</td>
+              <td>{{ s.destino or '—' }}</td>
+              <td><span class="badge bg-secondary">{{ s.usuario.username if s.usuario else '—' }}</span></td>
+            </tr>
+            {% else %}<tr><td colspan="5" class="text-center text-muted py-3">Sin registros en el período.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión — Bodega Concretcol</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    body { background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #0288d1 100%); min-height: 100vh; display:flex; align-items:center; }
+    .login-card { border-radius: 16px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .login-header { background: linear-gradient(135deg, #0d47a1, #0288d1); border-radius: 16px 16px 0 0; padding: 2rem; }
+    .btn-login { background: linear-gradient(135deg, #0d47a1, #0288d1); border: none; }
+    .btn-login:hover { background: linear-gradient(135deg, #0a3d8f, #0277bd); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5 col-lg-4">
+        <div class="card login-card">
+          <div class="login-header text-white text-center">
+            <i class="bi bi-box-seam display-4"></i>
+            <h3 class="mt-2 fw-bold">Sistema de Bodega</h3>
+            <p class="mb-0 opacity-75">Concretcol SAS</p>
+          </div>
+          <div class="card-body p-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} py-2">{{ msg }}</div>
+              {% endfor %}
+            {% endwith %}
+            <form method="POST" action="{{ url_for('login') }}" autocomplete="off" novalidate>
+              {{ form.hidden_tag() }}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Usuario</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  {{ form.username(class="form-control", placeholder="Ingrese su usuario", autofocus=True) }}
+                </div>
+                {% for e in form.username.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-semibold">Contraseña</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                  {{ form.password(class="form-control", placeholder="Ingrese su contraseña", id="passwordField") }}
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePwd()">
+                    <i class="bi bi-eye" id="eyeIcon"></i>
+                  </button>
+                </div>
+                {% for e in form.password.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              </div>
+              <button type="submit" class="btn btn-login btn-primary w-100 fw-bold py-2">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+              </button>
+            </form>
+          </div>
+          <div class="card-footer text-center text-muted small py-2">
+            Sistema protegido — Solo personal autorizado
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function togglePwd() {
+      const f = document.getElementById('passwordField');
+      const i = document.getElementById('eyeIcon');
+      if (f.type === 'password') { f.type = 'text'; i.className = 'bi bi-eye-slash'; }
+      else { f.type = 'password'; i.className = 'bi bi-eye'; }
+    }
+  </script>
+</body>
+</html>

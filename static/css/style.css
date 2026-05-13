@@ -1,0 +1,99 @@
+:root {
+  --bs-font-sans-serif: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: #f0f2f5;
+  font-size: 0.92rem;
+}
+
+.navbar {
+  padding: 0.5rem 1.5rem;
+}
+
+.nav-link {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.nav-link:hover, .nav-link.active {
+  background: rgba(255,255,255,0.15);
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.card-header {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #666;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.btn {
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.btn-purple {
+  background: #7B1FA2;
+  color: white;
+}
+.btn-purple:hover {
+  background: #6a1b9a;
+  color: white;
+}
+
+.text-purple { color: #7B1FA2; }
+
+.form-control, .form-select {
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  color: #555;
+  margin-bottom: 0.3rem;
+}
+
+.badge {
+  font-size: 0.73rem;
+  padding: 0.3em 0.6em;
+  border-radius: 6px;
+}
+
+.alert {
+  border-radius: 10px;
+  font-size: 0.88rem;
+}
+
+/* Sidebar active indicator */
+.nav-link.active {
+  font-weight: 600;
+}
+
+/* Print styles */
+@media print {
+  .navbar, .btn, form, #filtro { display: none !important; }
+  body { background: white; }
+  .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+}
+
+/* Scrollable tables on mobile */
+@media (max-width: 768px) {
+  .container-fluid { padding: 1rem; }
+  .display-6 { font-size: 1.5rem; }
+}

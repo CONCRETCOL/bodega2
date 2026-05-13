@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-0"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</h2>
+    <small class="text-muted">{{ today.strftime('%A, %d de %B de %Y') }}</small>
+  </div>
+</div>
+
+<!-- Tarjetas de resumen diario -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #1976D2 !important;">
+      <div class="card-body text-center py-3">
+        <div class="display-6 fw-bold text-primary">{{ entradas_hoy }}</div>
+        <div class="small text-muted fw-semibold"><i class="bi bi-box-arrow-in-down me-1"></i>Entradas hoy</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #7B1FA2 !important;">
+      <div class="card-body text-center py-3">
+        <div class="display-6 fw-bold text-purple">{{ reempaques_hoy }}</div>
+        <div class="small text-muted fw-semibold"><i class="bi bi-arrow-repeat me-1"></i>Reempaques hoy</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #388E3C !important;">
+      <div class="card-body text-center py-3">
+        <div class="display-6 fw-bold text-success">{{ salidas_hoy }}</div>
+        <div class="small text-muted fw-semibold"><i class="bi bi-box-arrow-up me-1"></i>Salidas hoy</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #F57F17 !important;">
+      <div class="card-body text-center py-3">
+        <div class="display-6 fw-bold text-warning">{{ bajo_min }}</div>
+        <div class="small text-muted fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>Bajo mínimo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-bold border-0 pb-0">
+        <i class="bi bi-lightning-charge me-2 text-warning"></i>Acciones Rápidas
+      </div>
+      <div class="card-body pt-2">
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('entradas') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-down me-2"></i>Registrar Entrada
+          </a>
+          <a href="{{ url_for('reempaques') }}" class="btn btn-purple">
+            <i class="bi bi-arrow-repeat me-2"></i>Registrar Reempaque
+          </a>
+          <a href="{{ url_for('salidas') }}" class="btn btn-success">
+            <i class="bi bi-box-arrow-up me-2"></i>Registrar Salida
+          </a>
+          <a href="{{ url_for('inventario') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-clipboard-data me-2"></i>Ver Inventario
+          </a>
+          <a href="{{ url_for('reportes') }}" class="btn btn-outline-info">
+            <i class="bi bi-bar-chart-line me-2"></i>Ver Reportes
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Últimos movimientos -->
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-box-arrow-in-down me-2"></i>Últimas Entradas
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for e in ultimas_entradas %}
+          <li class="list-group-item py-2 px-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold small">{{ e.material.nombre }}</span>
+              <span class="badge bg-primary">{{ e.cantidad }} {{ e.material.unidad }}</span>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">{{ e.fecha.strftime('%d/%m/%Y') }} · {{ e.usuario.username if e.usuario else '—' }}</div>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted small text-center py-3">Sin registros</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header text-white fw-semibold" style="background:#7B1FA2;">
+        <i class="bi bi-arrow-repeat me-2"></i>Últimos Reempaques
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for r in ultimos_reempaques %}
+          <li class="list-group-item py-2 px-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold small">{{ r.material.nombre }}</span>
+              <span class="badge" style="background:#7B1FA2;">{{ r.cantidad_salida }} {{ r.material.unidad }}</span>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">{{ r.fecha.strftime('%d/%m/%Y') }} · {{ r.tiempo_minutos }} min</div>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted small text-center py-3">Sin registros</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-success text-white fw-semibold">
+        <i class="bi bi-box-arrow-up me-2"></i>Últimas Salidas
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for s in ultimas_salidas %}
+          <li class="list-group-item py-2 px-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold small">{{ s.material.nombre }}</span>
+              <span class="badge bg-success">{{ s.cantidad }} {{ s.material.unidad }}</span>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">{{ s.fecha.strftime('%d/%m/%Y') }} · {{ s.usuario.username if s.usuario else '—' }}</div>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted small text-center py-3">Sin registros</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estado del inventario -->
+{% if agotados > 0 %}
+<div class="alert alert-danger mt-4 d-flex align-items-center">
+  <i class="bi bi-x-circle-fill me-3 fs-4"></i>
+  <div><strong>{{ agotados }} material(es) agotado(s).</strong> Revisa el <a href="{{ url_for('inventario') }}" class="alert-link">inventario</a>.</div>
+</div>
+{% endif %}
+{% endblock %}

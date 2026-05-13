@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Salidas{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0 text-success"><i class="bi bi-box-arrow-up me-2"></i>Registro de Salidas</h2>
+</div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-success text-white fw-semibold">
+        <i class="bi bi-plus-circle me-2"></i>Nueva Salida
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('salidas') }}" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Material *</label>
+            {{ form.material_id(class="form-select", id="materialSelect") }}
+            {% for e in form.material_id.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="alert alert-success py-2 small" id="stockInfo" style="display:none!important;">
+            <i class="bi bi-info-circle me-1"></i>Stock disponible: <strong id="stockVal">—</strong>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cantidad *</label>
+            <div class="input-group">
+              {{ form.cantidad(class="form-control", placeholder="0.00", step="0.001") }}
+              <span class="input-group-text" id="unidadLabel">—</span>
+            </div>
+            {% for e in form.cantidad.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Fecha *</label>
+            {{ form.fecha(class="form-control", value=today) }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Destino</label>
+            {{ form.destino(class="form-control", placeholder="Área o cliente destino") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notas</label>
+            {{ form.notas(class="form-control", rows=2) }}
+          </div>
+          <button type="submit" class="btn btn-success w-100 fw-bold">
+            <i class="bi bi-check-circle me-2"></i>Registrar Salida
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold border-bottom d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2 text-success"></i>Últimas 100 Salidas</span>
+        <span class="badge bg-success">{{ registros|length }}</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Fecha</th>
+                <th>Material</th>
+                <th class="text-end">Cantidad</th>
+                <th>Destino</th>
+                <th>Usuario</th>
+                <th>Notas</th>
+                {% if current_user.role == 'admin' %}<th></th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in registros %}
+              <tr>
+                <td class="text-nowrap">{{ r.fecha.strftime('%d/%m/%Y') }}</td>
+                <td class="fw-semibold">{{ r.material.nombre }}</td>
+                <td class="text-end text-success fw-bold">{{ r.cantidad }} {{ r.material.unidad }}</td>
+                <td>{{ r.destino or '—' }}</td>
+                <td><span class="badge bg-secondary">{{ r.usuario.username if r.usuario else '—' }}</span></td>
+                <td class="text-muted small">{{ r.notas or '' }}</td>
+                {% if current_user.role == 'admin' %}
+                <td>
+                  <form method="POST" action="{{ url_for('delete_salida', id=r.id) }}" onsubmit="return confirm('¿Eliminar?')">
+                    {{ form.hidden_tag() }}
+                    <button class="btn btn-sm btn-outline-danger py-0"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+                {% endif %}
+              </tr>
+              {% else %}
+              <tr><td colspan="7" class="text-center text-muted py-4">No hay salidas registradas.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const sel = document.getElementById('materialSelect');
+const stockInfo = document.getElementById('stockInfo');
+const stockVal = document.getElementById('stockVal');
+const unidadLabel = document.getElementById('unidadLabel');
+
+function fetchStock(id) {
+  if (!id) return;
+  fetch(`/api/stock/${id}`, {credentials:'same-origin'})
+    .then(r => r.json())
+    .then(d => {
+      unidadLabel.textContent = d.unidad;
+      stockVal.textContent = `${d.stock} ${d.unidad}`;
+      stockInfo.style.removeProperty('display');
+      stockInfo.className = 'alert py-2 small ' + (d.estado==='ok'?'alert-success':d.estado==='bajo'?'alert-warning':'alert-danger');
+    });
+}
+sel.addEventListener('change', () => fetchStock(sel.value));
+fetchStock(sel.value);
+</script>
+{% endblock %}

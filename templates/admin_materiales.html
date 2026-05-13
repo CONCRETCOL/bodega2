@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Administrar Materiales{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="bi bi-boxes me-2 text-primary"></i>Catálogo de Materiales</h2>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-primary text-white fw-semibold">
+        <i class="bi bi-plus-circle me-2"></i>Agregar Material
+      </div>
+      <div class="card-body">
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nombre *</label>
+            {{ form.nombre(class="form-control", placeholder="Nombre del material") }}
+            {% for e in form.nombre.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Unidad *</label>
+            {{ form.unidad(class="form-select") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Stock Mínimo *</label>
+            {{ form.stock_minimo(class="form-control", placeholder="0") }}
+            {% for e in form.stock_minimo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-bold">
+            <i class="bi bi-plus-circle me-2"></i>Agregar Material
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="mb-2">
+      <input type="text" class="form-control" id="filtro" placeholder="🔍  Buscar material...">
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold border-bottom d-flex justify-content-between">
+        <span><i class="bi bi-list-ul me-2 text-primary"></i>Materiales registrados</span>
+        <span class="badge bg-primary">{{ materiales|length }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0" id="tablaMateriales">
+          <thead class="table-light">
+            <tr><th>#</th><th>Nombre</th><th>Unidad</th><th class="text-end">Stock Mín.</th><th class="text-end">Stock Actual</th><th>Estado</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for m in materiales %}
+            <tr class="{% if not m.activo %}opacity-50{% endif %}">
+              <td class="text-muted">{{ loop.index }}</td>
+              <td class="fw-semibold">{{ m.nombre }}</td>
+              <td><span class="badge bg-secondary">{{ m.unidad }}</span></td>
+              <td class="text-end text-muted">{{ m.stock_minimo }}</td>
+              <td class="text-end fw-bold {% if m.estado=='ok' %}text-success{% elif m.estado=='bajo' %}text-warning{% else %}text-danger{% endif %}">
+                {{ "%.2f"|format(m.stock_actual) }}
+              </td>
+              <td>
+                {% if not m.activo %}<span class="badge bg-secondary">Inactivo</span>
+                {% elif m.estado=='ok' %}<span class="badge bg-success">OK</span>
+                {% elif m.estado=='bajo' %}<span class="badge bg-warning text-dark">Bajo</span>
+                {% else %}<span class="badge bg-danger">Agotado</span>{% endif %}
+              </td>
+              <td>
+                <form method="POST" action="{{ url_for('toggle_material', id=m.id) }}" style="display:inline;">
+                  {{ form.hidden_tag() }}
+                  <button class="btn btn-sm btn-{% if m.activo %}outline-secondary{% else %}outline-primary{% endif %} py-0">
+                    {{ 'Desactivar' if m.activo else 'Activar' }}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('filtro').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#tablaMateriales tbody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}
