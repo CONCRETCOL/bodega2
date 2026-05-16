@@ -73,9 +73,8 @@ class Material(db.Model):
     @property
     def stock_actual(self):
         entradas  = db.session.query(func.coalesce(func.sum(Entrada.cantidad), 0)).filter_by(material_id=self.id).scalar()
-        reempaque = db.session.query(func.coalesce(func.sum(Reempaque.cantidad_salida), 0)).filter_by(material_id=self.id).scalar()
         salidas   = db.session.query(func.coalesce(func.sum(Salida.cantidad), 0)).filter_by(material_id=self.id).scalar()
-        return round(entradas - reempaque - salidas, 4)
+        return round(entradas - salidas, 4)
 
     @property
     def estado(self):
