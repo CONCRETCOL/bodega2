@@ -539,7 +539,9 @@ def init_db():
     db.session.commit()
 
 
+# Inicializar DB siempre (funciona con Gunicorn y con python app.py)
+with app.app_context():
+    init_db()
+
 if __name__ == '__main__':
-    with app.app_context():
-        init_db()
     app.run(debug=False, host='0.0.0.0', port=5000)
